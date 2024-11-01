@@ -6,3 +6,5 @@ genres_5sec/
 .env
 
 wandb/
+
+best_models/
