@@ -1,194 +1,108 @@
-# Clasificador de Géneros Musicales con Deep Learning
+# Music Genre Classification with Deep Learning 🎶🤖
 
-Este repositorio contiene una implementación de clasificación de géneros musicales usando PyTorch y el dataset GTZAN. El proyecto utiliza diferentes arquitecturas de redes neuronales para clasificar fragmentos de audio en 10 géneros musicales diferentes.
+## Overview
+This repository implements an audio classification system using deep learning on the GTZAN dataset. The project focuses on classifying 5-second audio fragments into 10 musical genres using various neural network architectures and extensive hyperparameter tuning. Experiments were tracked and analyzed using Weights & Biases to gain deep insights into model performance and optimization strategies.
 
-## Descripción
+**Team:**  
+Ezequiel Grinblat, Luca Mazzarello, and Camila Migdal  
+**Course:** TD VI: Artificial Intelligence (2nd Semester, 2024)  
+**Project:** TP3 – Audio Classification
 
-El proyecto implementa un sistema de clasificación de géneros musicales que:
-- Utiliza el dataset GTZAN con 10 géneros musicales
-- Procesa archivos de audio de 5 segundos
-- Convierte las formas de onda en espectrogramas Mel para el análisis
-- Implementa diferentes arquitecturas de redes neuronales (MLP, MLP2, CEL, CEL2, CEL3)
-- Utiliza Weights & Biases (wandb) para el seguimiento de experimentos
+## Project Structure and Key Features
+The project is organized into two main parts: repository configuration & implementation details, and a comprehensive experimental analysis.
 
-## Características
+### Implementation & Repository Details
+- **Audio Preprocessing:**  
+  - Normalization and transformation of raw waveforms.
+  - Conversion of audio to Mel spectrograms (with decibel scaling and normalization).
+  - Data augmentation techniques: time stretching, pitch shifting, adding noise, and resampling.
+  - Padding or truncating audio to a fixed length.
 
-- Preprocesamiento de audio:
-  - Normalización
-  - Transformación a espectrogramas Mel
-  - Aumento de datos (time stretch, pitch shift)
+- **Neural Network Architectures:**  
+  - **MLP (Simple Multi-Layer Perceptron):** A basic architecture with three linear layers using ReLU activation.
+  - **MLP2:** A configurable MLP allowing customization of the number of hidden layers and nodes, with dropout regularization.
+  - **CEL (Convolutional Neural Network - Baseline):** Incorporates convolutional layers with batch normalization, pooling, and dropout, ending in dense layers with ReLU.
+  - **CEL2:** Similar to CEL but uses LeakyReLU to mitigate dead neurons.
+  - **CEL3:** Similar to CEL but employs ELU for smoother handling of negative values.
+
+- **Experiment Tracking:**  
+  - Integration with Weights & Biases (wandb) for logging training/validation loss, accuracy, confusion matrices, and learning curves.
+  - Experiment metadata and hyperparameter configurations are saved in JSON format.
+
+- **Repository Structure:**  
+  - `Cooking.ipynb` or `TP3_clasificador_musica.ipynb`: The main notebook with implementation and experiments.
+  - `best_models/`: Directory where the best models are saved.
+  - `wandb/`: Directory containing experiment logs and data.
+  - `.env`: File for storing the wandb API key.
+
+### Experimental Analysis & Results
+A significant part of the project is dedicated to extensive experimentation and evaluation of hyperparameters:
+
+1. **Initial Configuration & Dataset Splitting:**  
+   - Stratified splitting of the GTZAN dataset into training, validation, and test sets.
+   - Implementation of utility functions for parameter counting, optimizer/scheduler setup, and regularization (L1 and L2).
+
+2. **MLP Architecture Experiments:**  
+   - **Configurations Tested:**
+     - *Configuration 1:* Four dense layers (256 nodes each), learning rate 0.001, batch size 32, no dropout.
+     - *Configuration 2:* Two dense layers (512 nodes each), learning rate 0.0005, batch size 32, dropout 0.5.
+     - *Configuration 3:* Three dense layers (1024, 512, 256 nodes), learning rate 0.0003, batch size 32, dropout 0.3.
+   - **Results:**  
+     - Best accuracy observed with Configuration 2, although Configuration 1 provided a balanced trade-off between validation loss and accuracy.
+     - Configuration 3 showed the poorest performance.
+
+3. **CNN Architecture Experiments:**  
+   - **Configurations Tested:**
+     - *Configuration 1:* A simple CNN with one dense layer (32 nodes), learning rate 0.001, batch size 8, dropout 0.2.
+     - *Configuration 2:* Two dense layers (64 nodes each), learning rate 0.0005, batch size 16, dropout 0.3.
+     - *Configuration 3:* Three dense layers (128, 128, 64 nodes), learning rate 0.0005, batch size 32, dropout 0.3.
+   - **Results:**  
+     - Experiments conducted on both waveform and spectrogram inputs.
+     - For spectrograms, Configuration 3 provided the best performance while Configuration 1 suffered from overfitting.
   
-- Arquitecturas implementadas:
-  - MLP (Perceptrón Multicapa simple)
-  - MLP2 (Perceptrón Multicapa con capas configurables)
-  - CEL (Modelo Convolucional con ReLU)
-  - CEL2 (Modelo Convolucional con LeakyReLU)
-  - CEL3 (Modelo Convolucional con ELU)
+4. **Activation Functions Experiments:**  
+   - **Functions Compared:** ReLU, LeakyReLU, and ELU.
+   - **Findings:**  
+     - LeakyReLU excelled on waveform inputs by preserving negative information.
+     - For spectrogram inputs, ReLU yielded the best balance between accuracy and loss.
+     - ELU produced the worst results for waveform-based experiments.
 
-- Seguimiento de experimentos:
-  - Integración con Weights & Biases
-  - Métricas de entrenamiento y validación
-  - Comparación de diferentes configuraciones
+5. **Optimizers and Schedulers Experiments:**  
+   - **Comparisons:** ADAM vs. SGD; Plateau vs. Cosine schedulers.
+   - **Findings:**  
+     - SGD with a cosine scheduler provided the best overall performance for both spectrogram and waveform inputs.
+     - ADAM-Plateau was identified as the worst performing configuration in some cases.
 
-## Funcionamiento del Repositorio
+6. **Regularization Techniques:**  
+   - **Methods Tested:** L1 and L2 regularization.
+   - **Results:**  
+     - L2 tended towards overfitting while L1 showed signs of underfitting; overall, L1 offered a more balanced performance.
 
-### Transformaciones de Audio
-El sistema procesa el audio de dos formas diferentes:
+7. **Final Evaluation:**  
+   - The best model (selected based on accuracy, validation loss, and overall performance) was evaluated on the test set.
+   - A top-5 ranking of experiments was compiled, with the final winning model achieving an accuracy around 0.3 and a balanced validation loss.
 
-Principales dependencias:
-- PyTorch
-- torchaudio
-- wandb
-- numpy
-- matplotlib
+## How to Run the Project
+1. **Environment Setup:**  
+   - Create a new conda environment (e.g., Python 3.9) and install the required dependencies:
+     ```bash
+     conda create -n TDVI python=3.9
+     conda activate TDVI
+     pip install -r requirements.txt
+     ```
+2. **Weights & Biases Configuration:**  
+   - Create an account at [Weights & Biases](https://wandb.ai/).
+   - Add your API key to a `.env` file in the project root:
+     ```
+     WANDB_API_KEY=your_api_key_here
+     ```
+3. **Running the Notebook:**  
+   - Open the main Jupyter Notebook (`TP3_clasificador_musica.ipynb` or `Cooking.ipynb`) and run all cells sequentially.
+4. **Reviewing Results:**  
+   - Monitor experiment logs on Weights & Biases.
+   - Check the `best_models/` directory for saved models and review JSON metadata files for hyperparameter details.
 
-2. **Espectrograma**
-   - Transformación a espectrograma Mel
-   - Conversión a decibeles
-   - Normalización
-   - Aumento de datos específico para espectrogramas
+## Acknowledgements
+We thank our course instructors, peers, and mentors for their invaluable guidance and support throughout this project.
 
-### Modelos Disponibles
-
-1. **MLP (Perceptrón Multicapa Simple)**
-   - 3 capas lineales
-   - Función de activación ReLU
-   - Capa de salida con softmax
-
-2. **MLP2 (Perceptrón Multicapa Configurable)**
-   - Número configurable de capas ocultas
-   - Tamaño de capas ajustable
-   - Dropout para regularización
-
-3. **CEL (Modelo Convolucional)**
-   - Capas convolucionales con batch normalization
-   - Pooling y dropout
-   - Capas densas finales
-   - Función de activación ReLU
-
-4. **CEL2 (Modelo Convolucional con LeakyReLU)**
-   - Similar a CEL pero con:
-   - LeakyReLU como función de activación (negative_slope=0.1)
-   - Dropout ajustado
-   - Mejor manejo del problema de neuronas muertas
-
-5. **CEL3 (Modelo Convolucional con ELU)**
-   - Similar a CEL pero con:
-   - ELU como función de activación
-   - Mejor convergencia y rendimiento
-   - Manejo suave de valores negativos
-
-## Entrenamiento de Modelos
-
-### Configuración Inicial
-
-1. **Configuración de Weights & Biases**
-   - Crear una cuenta en [Weights & Biases](https://wandb.ai/)
-   - Crear un archivo `.env` en la raíz del proyecto
-   - Agregar tu API key:
-   ```
-   WANDB_API_KEY=tu_api_key_aqui
-   ```
-
-2. **Configuración del Entorno**
-   ```bash
-   conda create -n TDVI python=3.9
-   conda activate TDVI
-   pip install -r requirements.txt
-   ```
-
-## Entrenamiento de Modelos
-
-### Proceso de Entrenamiento
-
-El entrenamiento se realiza en dos modalidades diferentes:
-
-1. **Usando Waveform (forma de onda)**
-   ```python
-   by = "waveform"
-   train_model(model_name, num_epochs, device, hyperparameter_configs, 
-              dataset, train_dataset, val_dataset, n_input, by)
-   ```
-
-2. **Usando Espectrograma**
-   ```python
-   by = "spectogram"
-   train_model(model_name, num_epochs, device, hyperparameter_configs, 
-              dataset, train_dataset, val_dataset, n_input, by)
-   ```
-
-### Configuraciones de Hiperparámetros
-
-1. **Para MLP**
-```python
-hyperparameter_configs_MLP = [
-    {
-        "learning_rate": 0.001,
-        "batch_size": 32,
-        "nodes": 64
-    }
-]
-```
-
-2. **Para MLP2**
-```python
-hyperparameter_configs_MLP2 = [
-    {
-        "learning_rate": 0.001,
-        "batch_size": 32,
-        "nodes": 64,
-        "hidden_layers": 3
-    }
-]
-```
-
-3. **Para modelos CEL, CEL2 y CEL3**
-```python
-hyperparameter_configs_CEL = [
-    {
-        "learning_rate": 0.001,
-        "batch_size": 32,
-        "nodes": 64,
-        "hidden_layers": 3,
-        "dropout_prob": 0.3,
-        "dense_layers": 2
-    }
-]
-```
-
-### Parámetros de Entrenamiento
-
-- **num_epochs**: 100 (por defecto)
-- **batch_size**: Configurable en hyperparameter_configs
-- **learning_rate**: Configurable en hyperparameter_configs
-- **device**: Automáticamente detecta si hay GPU disponible
-
-### Seguimiento del Entrenamiento
-
-El proceso registra automáticamente en W&B:
-- Pérdida de entrenamiento
-- Pérdida de validación
-- Precisión
-- Matrices de confusión
-- Curvas de aprendizaje
-
-### Guardado de Modelos
-
-- Los mejores modelos se guardan automáticamente en `best_models/`
-- Se guarda el modelo con la menor pérdida de validación
-- Formato de nombre: `{model_name}_{by}_best_model.pth`
-
-## Estructura del Proyecto
-
-- `Cooking.ipynb`: Notebook principal con implementación y experimentos
-- `best_models/`: Directorio con los mejores modelos guardados
-- `wandb/`: Logs y datos de experimentos de Weights & Biases
-- `.env`: Archivo de configuración con la API key de W&B
-
-## Contribuciones
-
-Las contribuciones son bienvenidas. Por favor, abre un issue para discutir cambios mayores antes de crear un pull request.
-
-## Licencia
-
-Este proyecto está bajo la Licencia MIT. Ver el archivo `LICENSE` para más detalles.
+Happy coding and exploring musical data with deep learning! 🎵🚀
